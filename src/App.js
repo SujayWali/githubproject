@@ -13,7 +13,7 @@ class App extends React.Component {
     userDataError: null,
     reposDataError: null,
     loading: false,
-    pageSize: "10",
+    pageSize: 10,
     page: 1,
     fetchingRepos: false,
   };
@@ -36,7 +36,7 @@ class App extends React.Component {
     if (
       user &&
       maxScroll - currentScroll <= 100 &&
-      page * pageSize < user.public_repos
+      (page - 1) * pageSize < user.public_repos
     )
       this.loadPage();
   };
@@ -85,6 +85,7 @@ class App extends React.Component {
           return this.setState({
             user: user.data,
             repos: repos.data,
+            page: 2,
             loading: false,
           });
         }
@@ -124,21 +125,20 @@ class App extends React.Component {
         }));
     });
   };
-  handlePageChange = (page) => {
-    this.setState({ page }, () => this.loadPage());
-  };
+  // handlePageChange = (page) => {
+  //   this.setState({ page }, () => this.loadPage());
+  // };
 
-  handlePageSizeChange = (e) =>
-    this.setState(
-      {
-        pageSize: e.target.value,
-      },
-      () => this.loadPage()
-    );
+  // handlePageSizeChange = (e) =>
+  //   this.setState(
+  //     {
+  //       pageSize: e.target.value,
+  //     },
+  //     () => this.loadPage()
+  //   );
 
   render() {
-    const { userDataError, reposDataError, loading, user, repos, pageSize } =
-      this.state;
+    const { userDataError, reposDataError, loading, user, repos } = this.state;
     const renderRepos = !loading && !reposDataError && !!repos.length;
     return (
       <div className="App">
@@ -156,31 +156,6 @@ class App extends React.Component {
         {reposDataError && <p className="text-danger">{reposDataError}</p>}
         {renderRepos && (
           <React.Fragment>
-            <div className="mb-4">
-              {[...new Array(Math.ceil(user.public_repos / pageSize))].map(
-                (_, index) => (
-                  <button
-                    key={index}
-                    className="btn btn-success m-2"
-                    onClick={() => this.handlePageChange(index + 1)}
-                  >
-                    {index + 1}
-                  </button>
-                )
-              )}
-            </div>
-            <div className="d-inline-block mb-4">
-              <select
-                className="form-control"
-                onChange={this.handlePageSizeChange}
-                value={pageSize}
-              >
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-              </select>
-            </div>
-
             {repos.map((repo) => (
               <ReposCard key={repo.id} repo={repo} />
             ))}
