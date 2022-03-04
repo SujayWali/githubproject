@@ -1,8 +1,10 @@
-import React from "react";
+import React, { Fragment } from "react";
 import "./App.css";
 import ReposCard from "./components/ReposCard";
 import Search from "./components/Search";
 import UserCard from "./components/UserCard";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
 // const PAGE_SIZE = 10;
 
@@ -20,6 +22,9 @@ class App extends React.Component {
 
   componentDidMount() {
     window.addEventListener("scroll", this.handleScroll);
+    const { match } = this.props;
+
+    if (match.params.username) this.fetchData(match.params.username);
   }
 
   componentWillUnmount() {
@@ -139,31 +144,37 @@ class App extends React.Component {
 
   render() {
     const { userDataError, reposDataError, loading, user, repos } = this.state;
+    const { match } = this.props;
     const renderRepos = !loading && !reposDataError && !!repos.length;
-    return (
-      <div className="App">
-        <div>
-          <Search fetchData={this.fetchData} />
-        </div>
 
-        <div>
-          {loading && <p>Loading...</p>}
-          {userDataError && <p className="text-danger">{userDataError}</p>}
+    return (
+      <>
+        <div className="App">
+          <div>
+            <Search
+              //fetchData={this.fetchData}
+              username={match.params.username}
+            />
+          </div>
+          <div>
+            {loading && <p>Loading...</p>}
+            {userDataError && <p className="text-danger">{userDataError}</p>}
+          </div>
+          <div>
+            {!loading && !userDataError && user && <UserCard user={user} />}
+          </div>
+          {reposDataError && <p className="text-danger">{reposDataError}</p>}
+          {renderRepos && (
+            <React.Fragment>
+              {repos.map((repo) => (
+                <ReposCard key={repo.id} repo={repo} />
+              ))}
+            </React.Fragment>
+          )}
         </div>
-        <div>
-          {!loading && !userDataError && user && <UserCard user={user} />}
-        </div>
-        {reposDataError && <p className="text-danger">{reposDataError}</p>}
-        {renderRepos && (
-          <React.Fragment>
-            {repos.map((repo) => (
-              <ReposCard key={repo.id} repo={repo} />
-            ))}
-          </React.Fragment>
-        )}
-      </div>
+      </>
     );
   }
 }
 
-export default App;
+export default withRouter(App);
